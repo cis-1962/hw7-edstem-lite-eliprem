@@ -13,6 +13,17 @@
     "packages/*"
   ],
   "dependencies": {
-    "turbo": "^1.11.2"
+    "bcrypt": "^5.1.1",
+    "cookie-session": "^2.1.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongodb": "^6.5.0",
+    "nodemon": "^3.1.0",
+    "turbo": "^1.11.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-session": "^2.0.48"
   }
 }

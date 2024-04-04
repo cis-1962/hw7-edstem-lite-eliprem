@@ -16,11 +16,13 @@ function LogIn() {
         
             navigate("/");
         }  catch (error) {
-            console.error(error.response.data);
+            //console.error(error.response.data);
             // eslint-disable-next-line no-alert
             if (error.response.status === 401) {
+            // eslint-disable-next-line no-alert
             alert('Invalid username or password.');
         } else {
+            // eslint-disable-next-line no-alert
             alert('Login failed. Please try again later.');
         }
         }

@@ -1,35 +1,18 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Button, Modal, Form } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import useSWR from "swr";
-
-// import { getContacts } from "../questions";
-
-// export async function loader() {
-//   const contacts = await getContacts();
-//   return { contacts };
-// }
-
-const fetcher = (url) => axios.get(url).then((res) => res.data);
-
-// const res = await fetch('/api/questions', { method: 'GET' });
-// const questionData = (await res.json()) as { message: string };
+//import useSWR from "swr";
 
 
 
 function EdStem() {
-    //const { data: userData } = useSWR('/api/account', fetcher);
-    // const { data: questions } = useSWR('/api/questions', fetcher);
-    // const [loggedIn, setLoggedIn] = useState(false);
-    //const [newQuestion, setNewQuestion] = useState('');
+
     const [loggedIn, setLoggedIn] = useState(false);
     const [username, setUsername] = useState('');
     const [questions, setQuestions] = useState([]);
     const [newQuestion, setNewQuestion] = useState('');
     const [showModal, setShowModal] = useState(false);
-
-    const [answer, setAnswer] = useState('');
 
     const navigate = useNavigate();
     const routeLogin = () => {
@@ -88,13 +71,14 @@ function EdStem() {
 
     const handleAddQuestion = async () => {
         try {
-            await axios.post('/api/questions', { questionText: newQuestion });
+            await axios.post('/api/questions/add', { questionText: newQuestion });
             setShowModal(false);
             setNewQuestion('');
             // Fetch updated questions
             const response = await axios.get('/api/questions');
             setQuestions(response.data);
         } catch (error) {
+            // eslint-disable-next-line no-alert
             alert('Error adding question. Please try again.');
         }
     };
@@ -122,10 +106,42 @@ function EdStem() {
             <div className="flex-row">
                 <div id="sidebar">
                     {loggedIn ? ( //this condition is depending if user is logged in (different button options depending)
-                        <button className='item' onClick={handleShowModal}>Add a new question!</button>
+                        <Button className='item' onClick={handleShowModal} data-toggle="modal" data-target="#myModal">Add a new question!</Button>
                     ) : (
                         <button className='item' onClick={routeLogin}>Log in to submit a question!</button>
                     )}
+
+                    {showModal && (
+                        <div className="modal-container">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Add a New Question</h5>
+                                    {/* <button type="button" className="close" onClick={handleCloseModal}>
+                                        <span aria-hidden="true">&times;</span>
+                                    </button> */}
+                                </div>
+                                <div className="modal-body">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Enter question here"
+                                        value={newQuestion}
+                                        onChange={(e) => setNewQuestion(e.target.value)}
+                                    />
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
+                                        Close
+                                    </button>
+                                    <span style={{ marginRight: '10px' }}></span>
+                                    <button type="button" className="btn btn-primary" onClick={handleAddQuestion}>
+                                        Save Question
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <h1>Questions</h1>
                     <nav>
                         <ul>
@@ -143,28 +159,11 @@ function EdStem() {
                 </div>
 
                 <div id="detail">
-                    <Outlet />
+                    <Outlet/>
                 </div>
             </div>
+                                
 
-            <Modal show={showModal} onHide={handleCloseModal}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Add a New Question</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <Form.Group controlId="questionText">
-                            <Form.Control type="text" placeholder="Enter question here" value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)} />
-                        </Form.Group>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={handleCloseModal}>
-                            Close
-                        </Button>
-                        <Button variant="primary" onClick={handleAddQuestion}>
-                            Save Question
-                        </Button>
-                    </Modal.Footer>
-            </Modal>
         </>
     )
 }

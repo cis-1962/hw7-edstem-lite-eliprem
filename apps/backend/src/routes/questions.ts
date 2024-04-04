@@ -16,6 +16,21 @@ QuestionsRouter.get('/', async (req, res) => {
     };
 });
 
+// GET route for fetching a question by ID
+QuestionsRouter.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const question = await QuestionModel.findById(id);
+        if (!question) {
+            res.status(404).send('Question not found');
+            return;
+        }
+        res.status(200).send(question);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching question: ', error: error.message });
+    }
+});
+
 //POST route for adding a question with a body of questionText (should not contain author key, get that elsewhere)
 QuestionsRouter.post('/add', requireAuth, async (req, res) => {
     const { questionText } = req.body as {

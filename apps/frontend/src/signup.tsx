@@ -6,22 +6,26 @@ import { Link,  useNavigate } from 'react-router-dom';
 function Signup() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const history = useNavigate();
 
-    const handleSignUp = async () => {
+    const navigate = useNavigate();
+    const handleSignUp = async (e) => {
+        e.preventDefault();
+
         try {
-            //const response = await axios.post('/api/account/signup', { username, password });
-            
-            history('/');
-        } catch (error) {
+            await axios.post('/api/account/signup', { username, password });  //don't need /api?
+        
+            navigate("/");
+        }  catch (error) {
+            // eslint-disable-next-line no-alert
             alert('Sign up failed.');
         }
-    }
+
+    };
 
     return (
         <div>
             <h1>Sign Up</h1>
-            <form className="flex-col">
+            <form className="flex-col" onSubmit={handleSignUp}>
                 <input
                     className='item'
                     type='text'
@@ -36,7 +40,7 @@ function Signup() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}>
                 </input>
-                <button className='item' onClick={handleSignUp}>Sign Up</button>
+                <button className='item' type="submit">Sign Up</button>
                 <p>Already have an account?</p>
                 <Link to="/login">Log in here!</Link>
             </form>

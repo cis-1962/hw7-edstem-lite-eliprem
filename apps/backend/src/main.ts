@@ -44,7 +44,9 @@ app.get('/api/hello', (_req, res) => {
 });
 
 app.use('/api/account', AccountRouter);
-app.use('/api/questions', requireAuth, QuestionsRouter);
+app.use('/api/questions/add', requireAuth);
+app.use('/api/questions/answer', requireAuth);
+app.use('/api/questions', QuestionsRouter);
 
 
 // Error handling middleware

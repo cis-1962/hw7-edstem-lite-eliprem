@@ -6,22 +6,31 @@ import { Link,  useNavigate } from 'react-router-dom';
 function LogIn() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const history = useNavigate();
-
-    const handleSignUp = async () => {
+ 
+    const navigate = useNavigate();
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        
         try {
-            //const response = await axios.post('/api/account/signup', { username, password });
-            
-            history('/');
-        } catch (error) {
-            alert('Log In failed.');
+            await axios.post('/api/account/login', { username, password });  //don't need /api?
+        
+            navigate("/");
+        }  catch (error) {
+            console.error(error.response.data);
+            // eslint-disable-next-line no-alert
+            if (error.response.status === 401) {
+            alert('Invalid username or password.');
+        } else {
+            alert('Login failed. Please try again later.');
         }
-    }
+        }
+
+    };
 
     return (
         <div>
-            <h1>Login</h1>
-            <form className="flex-col">
+            <h1>Log In</h1>
+            <form className="flex-col" onSubmit={handleLogin}>
                 <input
                     className='item'
                     type='text'
@@ -31,12 +40,12 @@ function LogIn() {
                 </input>
                 <input
                     className='item'
-                    type='text'
+                    type='password'
                     placeholder="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}>
                 </input>
-                <button className='item' onClick={handleSignUp}>Log In</button>
+                <button className='item' type="submit">Log In</button>
                 <p>Don&apos;t have an account?</p>
                 <Link to="/signup">Sign up here!</Link>
             </form>

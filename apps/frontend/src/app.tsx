@@ -4,14 +4,21 @@ import Signup from './signup';
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import ErrorPage from './error-page';
-import EdStem from './edstem';
+import EdStem from './homepage';
 import LogIn from './login';
+import Question from './question';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <EdStem />,
     errorElement: <ErrorPage />,
+    children: [
+      {
+        path:"questions/:id",
+        element: <Question />,
+      },
+    ],
   },
   
   {
@@ -31,19 +38,8 @@ const router = createBrowserRouter([
 function App() {
 
   return (
-    <div className = "container marg-auto mt-10">
+    <div className = "container">
       <RouterProvider router={router} />
-      {/* <button
-        type="button"
-        onClick={async () => {
-          const res = await fetch('/api/hello', { method: 'GET' });
-          const data = (await res.json()) as { message: string };
-          // eslint-disable-next-line no-alert
-          alert(data.message);
-        }}
-        >
-        Hello, backend!
-      </button> */}
     </div>
   );
 }

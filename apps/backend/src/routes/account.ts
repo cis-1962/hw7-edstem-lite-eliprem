@@ -5,6 +5,33 @@ import UserModel from "../models/user";
 
 const AccountRouter = express.Router()
 
+AccountRouter.get('/', async (req, res) => {
+    try {
+        const username = req.session?.user;
+        if (!username) {
+            // User is not logged in
+            res.status(200).json({ loggedIn: false });
+            return;
+        }
+
+        const user = await UserModel.findOne({ username });
+        if (!user) {
+            // User not found in database
+            res.status(404).send('User not found');
+            return;
+        }
+
+        // User is logged in
+        res.status(200).json({
+            loggedIn: true,
+            username: user.username
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching user: ', error: error.message });
+    }
+ });
+
+
 //POST route for signup with a body of username and password
 AccountRouter.post('/signup', async (req, res) => {
     const { username, password } = req.body as {
@@ -48,19 +75,18 @@ AccountRouter.post('/login', async (req, res) => {
         password: string;
     }
 
-
   try {
         //finding the user name
         const user = await UserModel.findOne({ username });
         if (!user) {
-            res.status(401).send('Invalid username')
+            //res.status(401).send('Invalid username')
             throw new Error('Username not in system');
         }
 
         //seeing if password is right
         const checkPassword = await bcrypt.compare(password, user.password);
         if (!checkPassword) {
-            res.status(401).send('Invalid password')
+            //res.status(401).send('Invalid password')
             throw new Error('Incorrect password entered');
         }
 

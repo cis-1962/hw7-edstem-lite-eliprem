@@ -14,7 +14,7 @@ function LogIn() {
         try {
             await axios.post('/api/account/login', { username, password });  //don't need /api?
         
-            navigate("/");
+            navigate("/media");
         }  catch (error) {
             //console.error(error.response.data);
             // eslint-disable-next-line no-alert
@@ -31,7 +31,7 @@ function LogIn() {
 
     return (
         <div>
-            <h1>Log In</h1>
+            <h1>Media Genius</h1>
             <form className="flex-col" onSubmit={handleLogin}>
                 <input
                     className='item'

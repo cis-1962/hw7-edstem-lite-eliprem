@@ -4,14 +4,14 @@ import mongoose from 'mongoose';
 import AccountRouter from './routes/account';
 import cookieSession from 'cookie-session';
 import requireAuth from './middlewares/require-auth';
-import QuestionsRouter from './routes/questions';
+import MediaRouter from './routes/mediaRouter';
 
 // read environment variables from .env file
 dotenv.config();
 //setting port
 const PORT = process.env.PORT ?? 8000;
 //setting URI
-const MONGO_URI = process.env.MONGODB_URI || "mongodb+srv://eliprem:5Nq90mxAF3JrkS7g@cluster0.twzjrzn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MONGO_URI = process.env.MONGODB_URI || "mongodb+srv://eliprem:ldZAwQCpS86jviXI@cluster0.yqpgiwi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 mongoose.connect(MONGO_URI, {});
 //console statements for testing connection:
 //const db = mongoose.connection;
@@ -44,9 +44,9 @@ app.get('/api/hello', (_req, res) => {
 });
 
 app.use('/api/account', AccountRouter);
-app.use('/api/questions/add', requireAuth);
-app.use('/api/questions/answer', requireAuth);
-app.use('/api/questions', QuestionsRouter);
+app.use('/api/media/add', requireAuth);
+app.use('/api/media/bycreator', requireAuth);
+app.use('/api/media', MediaRouter);
 
 
 // Error handling middleware
@@ -62,4 +62,4 @@ app.listen(PORT, () => {
 });
 
 
-//mongodb user eliprem, pass: 5Nq90mxAF3JrkS7g
+//mongodb user eliprem, pass: ldZAwQCpS86jviXI

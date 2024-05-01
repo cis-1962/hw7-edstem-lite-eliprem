@@ -14,7 +14,7 @@ function Signup() {
         try {
             await axios.post('/api/account/signup', { username, password });  //don't need /api?
         
-            navigate("/");
+            navigate("/media");
         }  catch (error) {
             // eslint-disable-next-line no-alert
             alert('Sign up failed.');
@@ -24,7 +24,7 @@ function Signup() {
 
     return (
         <div>
-            <h1>Sign Up</h1>
+            <h1>Media Genius</h1>
             <form className="flex-col" onSubmit={handleSignUp}>
                 <input
                     className='item'

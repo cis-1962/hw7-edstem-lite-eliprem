@@ -1,24 +1,32 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Button } from "react-bootstrap";
-import { Link, Outlet, useNavigate } from "react-router-dom";
-//import useSWR from "swr";
+import { useNavigate } from "react-router-dom";
+import Media from "./media";
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Button from "react-bootstrap/Button";
+import AddModal from "./add-modal";
+import { Dropdown, DropdownButton } from "react-bootstrap";
 
 
 
-function EdStem() {
+
+function MediaGenius() {
 
     const [loggedIn, setLoggedIn] = useState(false);
     const [username, setUsername] = useState('');
-    const [questions, setQuestions] = useState([]);
-    const [newQuestion, setNewQuestion] = useState('');
-    const [showModal, setShowModal] = useState(false);
+    const [media, setMedia] = useState([]);
+    const [showAddModal, setShowAddModal] = useState(false);
 
     const navigate = useNavigate();
     const routeLogin = () => {
-        const path = "/login"
-        navigate(path);
+         const path = "/login"
+         navigate(path);
     }
+    const [filteredType, setFilteredType] = useState('');
+    const [filteredRating, setFilteredRating] = useState('');
+
 
     //checking if user is logged in
     useEffect(() => {
@@ -35,137 +43,207 @@ function EdStem() {
                 alert('Error checking login status. Please try again.');
             }
         };
+        checkLoginStatus();
         const interval = setInterval(checkLoginStatus, 2000);
 
         return () => clearInterval(interval);
     }, []);
 
-    //get request for list of questions
+
     useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const response = await axios.get('/api/questions');
-        setQuestions(response.data);
-      } catch (error) {
-        //console.error('Error fetching questions:', error);
-        // eslint-disable-next-line no-alert
-        alert('Error fetching questions. Please try again.');
-      }
-    };
+        const fetchData = async () => {
+            try {
+                let url = '/api/media/bycreator';
+                if (loggedIn) {
+                    url += `?type=${filteredType}&rating=${filteredRating}`;
+                }
+                const response = await axios.get(url);
+                setMedia(response.data);
+            } catch (error) {
+                //console.error('Error fetching media:', error);
+                // eslint-disable-next-line no-alert
+                alert('Error fetching media. Please try again.');
+            }
+        };
+        fetchData();
 
-    const interval = setInterval(fetchQuestions, 2000);
-
-    return () => clearInterval(interval);
-    }, []);
+        if (loggedIn) {
+            const interval = setInterval(fetchData, 2000);
+            return () => clearInterval(interval); 
+        }
+    }, [loggedIn, filteredType, filteredRating]);
+    
 
     const handleLogout = async (e) => {
+        e.preventDefault();
         try {
-            e.preventDefault();
             await axios.post('/api/account/logout');
-            // Redirect or handle logout success
+            routeLogin();
         } catch (error) {
             // eslint-disable-next-line no-alert
             alert('Logout failed.');
         }
     };
 
-    const handleAddQuestion = async () => {
+    const handleShowAddModal = () => setShowAddModal(true);
+    const handleCloseAddModal = () => setShowAddModal(false);
+
+    const handleDeleteMedia = async (deletedId) => {
         try {
-            await axios.post('/api/questions/add', { questionText: newQuestion });
-            setShowModal(false);
-            setNewQuestion('');
-            // Fetch updated questions
-            const response = await axios.get('/api/questions');
-            setQuestions(response.data);
+            setMedia(media.filter(item => item._id !== deletedId)); // Update media list by filtering out the deleted item
         } catch (error) {
+            //console.error("Error deleting media:", error);
             // eslint-disable-next-line no-alert
-            alert('Error adding question. Please try again.');
+            alert('Error deleting media.');
         }
     };
 
-    //modal stuff:
-    const handleCloseModal = () => setShowModal(false);
-    const handleShowModal = () => setShowModal(true);
+    const handleEditMedia = async (updatedMedia) => {
+        try {
+            setMedia(media.map(item => item._id === updatedMedia._id ? updatedMedia : item)); // Update media list with edited item
+        } catch (error) {
+            //console.error("Error editing media:", error);
+            // eslint-disable-next-line no-alert
+            alert('Error updating media.');
+        }
+    };
 
+    const getStarRating = (rating) => {
+        return '⭐'.repeat(parseInt(rating));
+    };
 
     
     return (
-        <>
+        <Container>
             <h2>
-                <span className="font-2">EdStem Question Center</span>
-                {loggedIn ? ( //this condition is depending if user in logged in
-                    <div className="flex-row">
-                        <span className="font-1 padright">Hi {username}  </span>
-                        <Link to={`login`} onClick={handleLogout}>Log out</Link>
-                    </div>
-
-                ) : (
-                    <span className="font-1"></span>
-                )}
+                <span className="font-2">Media Genius</span>
+                <div className="logout-container">
+                    <span className="font-1">{username}</span>
+                    <button className="logout-button" onClick={handleLogout}>&#x27A0;</button>
+                    {/* other button options: &#x2348; &#x27A0; &#x27A5; */}
+                </div>
             </h2>
-            <div className="flex-row">
-                <div id="sidebar">
-                    {loggedIn ? ( //this condition is depending if user is logged in (different button options depending)
-                        <Button className='item' onClick={handleShowModal} data-toggle="modal" data-target="#myModal">Add a new question!</Button>
-                    ) : (
-                        <button className='item' onClick={routeLogin}>Log in to submit a question!</button>
-                    )}
+            <br/>
+            <Container fluid>
+                <Row style={{ marginBottom: '15px' }}>
+                    <Col>
+                        <Button className="transparent-button" onClick={handleShowAddModal}>Add Media</Button>
+                    </Col>
+                    <Col>
+                        <DropdownButton className="filter" title={`Type: ${filteredType || 'All'}`} onSelect={(eventKey) => setFilteredType(eventKey)}>
+                            <Dropdown.Item eventKey="">All</Dropdown.Item>
+                            <Dropdown.Item eventKey="Book 📖">Book 📖</Dropdown.Item>
+                            <Dropdown.Item eventKey="Movie 🎥">Movie 🎥</Dropdown.Item>
+                            <Dropdown.Item eventKey="TV Show 📺">TV Show 📺</Dropdown.Item>
+                            <Dropdown.Item eventKey="Album 💿">Album 💿</Dropdown.Item>
+                            <Dropdown.Item eventKey="Song 🎵">Song 🎵</Dropdown.Item>
+                            <Dropdown.Item eventKey="Podcast 🎙️">Podcast 🎙️</Dropdown.Item>
+                            <Dropdown.Item eventKey="Video Game 🎮">Video Game 🎮</Dropdown.Item>
+                            <Dropdown.Item eventKey="Other ❓">Other ❓</Dropdown.Item>
+                        </DropdownButton>
+                    </Col>
+                    <Col>
+                        <DropdownButton className="filter" title={`Rating: ${getStarRating(filteredRating) || 'All'}`} onSelect={(eventKey) => setFilteredRating(eventKey)}>
+                            <Dropdown.Item eventKey="">All</Dropdown.Item>
+                            <Dropdown.Item eventKey="1">⭐</Dropdown.Item>
+                            <Dropdown.Item eventKey="2">⭐⭐</Dropdown.Item>
+                            <Dropdown.Item eventKey="3">⭐⭐⭐</Dropdown.Item>
+                            <Dropdown.Item eventKey="4">⭐⭐⭐⭐</Dropdown.Item>
+                            <Dropdown.Item eventKey="5">⭐⭐⭐⭐⭐</Dropdown.Item>
+                        </DropdownButton>
+                    </Col>
+                </Row>
+            </Container>
+            {/* <br/>
+            <Button className="transparent-button" onClick={handleShowAddModal}>Add Media</Button>
+            <br/> */}
+            <Container fluid>
 
-                    {showModal && (
-                        <div className="modal-container">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Add a New Question</h5>
-                                    {/* <button type="button" className="close" onClick={handleCloseModal}>
-                                        <span aria-hidden="true">&times;</span>
-                                    </button> */}
+                {media && media.length > 0 && (
+                    media.reduce((rows, m, index) => {
+                        if (index % 3 === 0) {
+                            rows.push([]);
+                        }
+                        rows[rows.length - 1].push(
+                            <Col sm={4} key={m._id}>
+                                <div className={`holder`}>
+                                    <Media key={m._id} {...m} onDelete={handleDeleteMedia} onEdit={handleEditMedia} />
                                 </div>
-                                <div className="modal-body">
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder="Enter question here"
-                                        value={newQuestion}
-                                        onChange={(e) => setNewQuestion(e.target.value)}
-                                    />
-                                </div>
-                                <div className="modal-footer">
-                                    <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
-                                        Close
-                                    </button>
-                                    <span style={{ marginRight: '10px' }}></span>
-                                    <button type="button" className="btn btn-primary" onClick={handleAddQuestion}>
-                                        Save Question
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                            </Col>
+                        );
+                        return rows;
+                    }, []).map((row, rowIndex) => (
+                        <Row key={rowIndex} style={{ marginBottom: '25px' }}>
+                            {row}
+                        </Row>
+                    ))
+                )}
 
-                    <h1>Questions</h1>
-                    <nav>
-                        <ul>
-                            {questions && 
-                                questions.map((question) => (
-                                    <li key={question._id}>
-                                        <Link to={`/questions/${question._id}`}>
-                                            {question.questionText}
-                                        </Link>
-                                    </li>
-                                ))
+                {/* {media && media.length > 0 && (
+                    media.reduce((rows, m, index) => {
+                        if (index % 3 === 0) {
+                            rows.push([]);
+                            if (rows.length === 1 && !rows[0].includes('placeholder')) {
+                                // Push the placeholder card as the first element in the first row
+                                rows[0].push(
+                                    <Col sm={4} key={`placeholder-${index}`}>
+                                        <div className={`holder`}>
+                                            <Button className="transparent-button" onClick={handleShowAddModal}>  +  </Button>
+
+                                             <Card className="add-media-card">
+                                                <Card.Body>
+                                                    <Button className="transparent-button" onClick={handleShowAddModal}>  +  </Button>
+                                                </Card.Body>
+                                                <Card.Subtitle className="new-rocker">Add Media</Card.Subtitle>
+                                                <br/>
+                                            </Card> 
+                                        </div>
+                                    </Col>
+                                );
+                                // Push the first and second elements from the media list to the middle and last columns
+                                if (media.length >= 2) {
+                                    rows[0].push(
+                                        <Col sm={4} key={media[0]._id}>
+                                            <div className={`holder`}>
+                                                <Media key={media[0]._id} {...media[0]} onDelete={handleDeleteMedia} onEdit={handleEditMedia} />
+                                            </div>
+                                        </Col>
+                                    );
+                                }
+                                if (media.length >= 3) {
+                                    rows[0].push(
+                                        <Col sm={4} key={media[1]._id}>
+                                            <div className={`holder`}>
+                                                <Media key={media[1]._id} {...media[1]} onDelete={handleDeleteMedia} onEdit={handleEditMedia} />
+                                            </div>
+                                            <br/>
+                                        </Col>
+                                    );
+                                }
                             }
-                        </ul>
-                    </nav>
-                </div>
+                        } else {
+                            // Push the rest of the media in row and column format sequentially
+                            rows[rows.length - 1].push(
+                                <Col sm={4} key={media[index + 1]._id}>
+                                    <div className={`holder`}>
+                                        <Media key={media[index + 1]._id} {...media[index + 1]} onDelete={handleDeleteMedia} onEdit={handleEditMedia} />
+                                    </div>
+                                </Col>
+                            );
+                        }
+                        return rows;
+                    }, []).map((row, rowIndex) => (
+                        <Row key={rowIndex} style={{ marginBottom: '25px' }}>
+                            {row}
+                        </Row>
+                    ))
+                )} */}
+            </Container>
 
-                <div id="detail">
-                    <Outlet/>
-                </div>
-            </div>
-                                
+            <AddModal show={showAddModal} handleClose={handleCloseAddModal} />
 
-        </>
-    )
-}
+        </Container>
+    );
+};
 
-export default EdStem;
+export default MediaGenius;
